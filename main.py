@@ -32,6 +32,8 @@ calendars = soup.find_all("div", class_="calendar-content")
 for calendar in calendars:
     # Find all "month-box" divs inside this calendar-content
     month_boxes = calendar.find_all("div", class_=lambda x: x and x.startswith("month-box"))
+    print(month_box)
+    # break
 
     for month_box in month_boxes:
         classes = month_box.get("class", [])
