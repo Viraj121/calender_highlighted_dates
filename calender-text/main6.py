@@ -1,0 +1,184 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
+
+# WebDriver setup
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
+
+service = Service()
+driver = webdriver.Chrome(service=service, options=options)
+
+# Open the webpage
+url = "https://rtp.pixika.ai/v2/pdf/index.php?tt=1740651460&product=DIYCALENDAR&source=cam&objectKey=67171b2dabeed5808&preview=stitch-done" # working with code gu
+
+# url="https://rtp.pixika.ai/v2/pdf/index.php?tt=1740657059&product=DIYCALENDAR&source=cam&objectKey=677bb68e161186718&preview=stitch-done" # working with code en
+driver.get(url)
+
+
+regional_calendar_data = {
+    "te": {  # Telugu
+        "months": {"జనవరి", "ఫిబ్రవరి", "మార్చి", "ఏప్రిల్‌", "మే", "జూన్‌",
+                   "జులై", "ఆగస్టు", "సెప్టెంబరు", "అక్టోబరు", "నవంబరు", "డిసెంబరు"},
+        "weekdays": {"ఆది", "సోమ", "మంగళ", "బుధ", "గురు", "శుక్ర", "శని"},
+        "dates": {"౧", "౨", "౩", "౪", "౫", "౬", "౭", "౮", "౯", "౧౦", "౧౧", "౧౨", "౧౩", "౧౪", "౧౫",
+                  "౧౬", "౧౭", "౧౮", "౧౯", "౨౦", "౨౧", "౨౨", "౨౩", "౨౪", "౨౫", "౨౬", "౨౭", "౨౮", "౨౯", "౩౦", "౩౧"}
+    },
+    "en": {  # English
+        "months": {"January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"},
+        "weekdays": {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"},
+        "dates": {str(i) for i in range(1, 32)}
+    },
+    "mr": {  # Marathi
+        "months": {"जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "જુલાઈ", "ઓગસ્ટ", "સપ્ટેમ્બર", "ઓક્ટોબર", "નવેમ્બર", "ડિસેમ્બર"},
+        "weekdays": {"રવિ", "સોમ", "મંગળ", "બુધ", "ગુરુ", "શુક્ર", "શનિ"},
+        "dates": {"૧", "૨", "૩", "૪", "૫", "૬", "૭", "૮", "૯", "૧૦", "૧૧", "૧૨", "૧૩", "૧૪", "૧૫",
+                  "૧૬", "૧૭", "૧૮", "૧૯", "૨૦", "૨૧", "૨૨", "૨૩", "૨૪", "૨૫", "૨૬", "૨૭", "૨૮", "૨૯", "૩૦", "૩૧"}
+    },
+    "gu": {  # Gujarati
+        "months": {"જાન્યુઆરી", "ફેબ્રુઆરી", "માર્ચ", "એપ્રિલ", "મે", "જૂન",
+                   "જુલાઈ", "ઓગસ્ટ", "સપ્ટેમ્બર", "ઓક્ટોબર", "નવેમ્બર", "ડિસેમ્બર"},
+        "weekdays": {"રવિ", "સોમ", "મંગળ", "બુધ", "ગુરુ", "શુક્ર", "શનિ"},
+        "dates": {"૧", "૨", "૩", "૪", "૫", "૬", "૭", "૮", "૯", "૧૦", "૧૧", "૧૨", "૧૩", "૧૪", "૧૫",
+                  "૧૬", "૧૭", "૧૮", "૧૯", "૨૦", "૨૧", "૨૨", "૨૩", "૨૪", "૨૫", "૨૬", "૨૭", "૨૮", "૨૯", "૩૦", "૩૧"}
+    }
+}
+
+kids_calendar_data = {
+    "te": {  # Telugu
+        "months": {"జనవరి", "ఫిబ్రవరి", "మార్చి", "ఏప్రిల్‌", "మే", "జూన్‌",
+                   "జులై", "ఆగస్టు", "సెప్టెంబరు", "అక్టోబరు", "నవంబరు", "డిసెంబరు"},
+        "weekdays": {"ఆది", "సోమ", "మంగళ", "బుధ", "గురు", "శుక్ర", "శని"},
+        "dates": {"౧", "౨", "౩", "౪", "౫", "౬", "౭", "౮", "౯", "౧౦", "౧౧", "౧౨", "౧౩", "౧౪", "౧౫",
+                  "౧౬", "౧౭", "౧౮", "౧౯", "౨౦", "౨౧", "౨౨", "౨౩", "౨౪", "౨౫", "౨౬", "౨౭", "౨౮", "౨౯", "౩౦", "౩౧"}
+    },
+    "en": {  # English
+        "months": {"January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"},
+        "weekdays": {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"},
+        "dates": {str(i) for i in range(1, 32)}
+    },
+    "mr": {  # Marathi
+        "months": {"जानेवारी", "फેબ्रुवारी", "मार्च", "एप्रिल", "मे", "જુલાઈ", "ઓગસ્ટ", "સપ્ટેમ્બર", "ઓક્ટોબર", "નવેમ્બર", "ડિસેમ્બર"},
+        "weekdays": {"રવિ", "સોમ", "મંગળ", "બુધ", "ગુરુ", "શુક્ર", "શનિ"},
+        "dates": {"૧", "૨", "૩", "૪", "૫", "૬", "૭", "૮", "૯", "૧૦", "૧૧", "૧૨", "૧૩", "૧૪", "૧૫",
+                  "૧૬", "૧૭", "૧૮", "૧૯", "૨૦", "૨૧", "૨૨", "૨૩", "૨૪", "૨૫", "૨૬", "૨૭", "૨૮", "૨૯", "૩૦", "૩૧"}
+    },
+    "gu": {  # Gujarati
+        "months": {"જાન્યુઆરી", "ફેબ્રુઆરી", "માર્ચ", "એપ્રિલ", "મે", "જૂન",
+                   "જુલાઈ", "ઓગસ્ટ", "સપ્ટેમ્બર", "ઓક્ટોબર", "નવેમ્બર", "ડિસેમ્બર"},
+        "weekdays": {"રવિ", "સોમ", "મંગળ", "બુધ", "ગુરુ", "શુક્ર", "શનિ"},
+        "dates": {"૧", "૨", "૩", "૪", "૫", "૬", "૭", "૮", "૯", "૧૦", "૧૧", "૧૨", "૧૩", "૧૪", "૧૫",
+                  "૧૬", "૧૭", "૧૮", "૧૯", "૨૦", "૨૧", "૨૨", "૨૩", "૨૪", "૨૫", "૨૬", "૨૭", "૨૮", "૨૯", "૩૦", "૩૧"}
+    }
+}
+
+
+try:
+    # Get page source and parse it
+    page_source = driver.page_source
+    soup = BeautifulSoup(page_source, "html.parser")
+
+    print("step 1")
+
+    # Find the div with id "hub_1" (outer container)
+    hub_div = soup.find("div", id="hub_1")
+
+    if hub_div:
+        # Search for class names that contain "collection-pan-" or "collection-kids"
+        if hub_div.find("div", class_=lambda x: x and "collection-pan-" in x):
+            print("inside pan")
+            selected_calendar_data = regional_calendar_data
+        elif hub_div.find("div", class_=lambda x: x and "collection-kids" in x):
+            print("inside kid")
+            selected_calendar_data = kids_calendar_data
+        else:
+            print("none selected")
+            selected_calendar_data = None
+    else:
+        print("hub_1 div not found")
+        selected_calendar_data = None
+
+except Exception as e:
+    print("Error:", e)
+    selected_calendar_data = None
+
+print([div.get("class") for div in hub_div.find_all("div")])
+
+
+
+if selected_calendar_data:
+    try:
+        # Wait for the month name to appear and match one of the valid months
+        WebDriverWait(driver, 10).until(
+            lambda d: (
+                (month_text := d.find_element(By.CLASS_NAME, "month-name").text.strip())
+                and any(month_text in data["months"] for data in selected_calendar_data.values())
+            ) if any(d.find_element(By.CLASS_NAME, "month-name").text.strip() in data["months"]
+                     for data in selected_calendar_data.values()) else True
+        )
+
+        # Now proceed with extracting months, weekdays, and dates using the selected dictionary
+        calendars = soup.find_all("div", class_="calendar-content")
+
+        for calendar in calendars:
+            # month = calendar.find("div", class_="month-name")
+            # month_text = month.get_text(strip=True) if month else "Month Not Found"
+
+            # # Get valid month set
+            # valid_months = {month for lang_data in selected_calendar_data.values() for month in lang_data["months"]}
+
+            # month_valid = month_text in valid_months
+
+            # print(f"\n📅 Calendar - {month_text}")
+            # print("-" * 50)
+            # print(f"Month Valid: {month_valid}")
+            # print("-" * 50)
+            # Extract month and year
+            # Extract month and year
+            month = calendar.find("div", class_="month-name")
+            # print(month)
+            # break
+
+            # Find the "days" div inside this same calendar-content
+            days_div = calendar.find("div", class_="days")
+
+            # Detect language from class attribute
+            language_class = days_div.get("class", []) if days_div else []
+            language = None
+            for cls in language_class:
+                if cls.startswith("lang-"):
+                    language = cls.split("-")[-1]
+                    break
+
+            month_text = month.get_text(strip=True) if month else "Month Not Found"
+
+            weekdays = {day.get_text(strip=True) for day in calendar.find_all("div", class_="day-head")}
+            dates = {date.get_text(strip=True) for date in calendar.find_all("div", class_="cell-date") if date.get_text(strip=True)}
+
+            # Verify extracted data using set operations
+            valid_data = calendar_data.get(language, {})
+            valid_months, valid_weekdays, valid_dates = valid_data.get("months", set()), valid_data.get("weekdays", set()), valid_data.get("dates", set())
+
+            month_valid = month_text in valid_months
+            weekdays_valid = weekdays.issubset(valid_weekdays)
+            dates_valid = dates.issubset(valid_dates)
+
+            # Print validation results
+            print(f"\n📅 Calendar - {month_text} (Language: {language})")
+            print("-" * 50)
+            print(f"Month Valid: {month_valid}")
+            print(f"Weekdays Valid: {weekdays_valid}")
+            print(f"Dates Valid: {dates_valid}")
+            print("-" * 50)
+          
+    except Exception as e:
+        print("Error:", e)
+
+# Close the browser
+driver.quit()
