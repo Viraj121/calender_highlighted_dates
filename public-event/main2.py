@@ -30,7 +30,12 @@ driver = webdriver.Chrome(options=options)
 
 # Open the calendar page
 # driver.get("https://rtp.pixika.ai/v2/pdf/index.php?tt=1740653192&product=DIYCALENDAR&source=cam&objectKey=671ee828b56bc0323&preview=stitch-done")
-driver.get("https://rtp.pixika.ai/v2/pdf/index.php?tt=1740047884&product=DIYCALENDAR&source=cam&objectKey=676ba70b32618e0b2&preview=ready")
+# driver.get("https://rtp.pixika.ai/v2/pdf/index.php?tt=1740047884&product=DIYCALENDAR&source=cam&objectKey=676ba70b32618e0b2&preview=ready")
+# driver.get('https://rtp.pixika.ai/v2/pdf/index.php?tt=1740651460&product=DIYCALENDAR&source=cam&objectKey=67171b2dabeed5808&preview=stitch-done')
+
+
+
+driver.get('https://rtp.pixika.ai/v2/pdf/index.php?tt=1741249400&product=DIYCALENDAR&source=cam&objectKey=67c95b5d9ecdaaaac&preview=collection-init')
 
 # Wait until at least one calendar-content div loads
 WebDriverWait(driver, 10).until(
@@ -128,7 +133,7 @@ for calendar in calendars:
             # Extract the month name from the "data-i18n" attribute
             # month_name = month_name_div["data-i18n"].capitalize()
             month_name = month_name_div["data-i18n"].split("-", 1)[-1].capitalize()
-            # print(month_name,'debugging...')
+            print(month_name,'debugging...')
         else:
             # print("parsing through else ")
             # Handle the exceptional case
